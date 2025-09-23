@@ -1,0 +1,45 @@
+[project]
+name = "docling_parser"
+version = "0.1.0"
+description = "Docling Parser"
+authors = [
+    {name = "Yohan Goncalves", email = "yohan.goncalves.pro@gmail.com"},
+]
+license = {text = "Apache 2.0"}
+requires-python = ">=3.12.7"
+
+[tool.pytest.ini_options]
+pythonpath = ["docling_parser"]
+addopts = ["-v", "--tb=short"]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.poetry]
+name = "docling_parser"
+version = "0.1.0"
+description = "Docling Parser"
+authors = ["Yohan Goncalves <yohan.goncalves.pro@gmail.com>"]
+license = "Apache 2.0"
+
+[tool.poetry.dependencies]
+python = "^3.12.7"
+langchain = "0.3.26"
+langchain-core = "0.3.70"
+langchain-ollama = "0.3.5"
+langchain-community = "0.3.27"
+langgraph = "0.6.4"
+langchain-openai = "0.3.28"
+docling = "2.54.0"
+pymupdf = "1.26.4"
+pymupdf4llm = "0.0.27"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "8.4.1"
+pytest-asyncio = "1.0.0"
+poetry-dotenv-plugin = "0.2.0"
+python-dotenv = "1.0.1"
+ipython = "9.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
