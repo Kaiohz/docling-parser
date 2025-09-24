@@ -32,6 +32,10 @@ langchain-openai = "0.3.28"
 docling = "2.54.0"
 pymupdf = "1.26.4"
 pymupdf4llm = "0.0.27"
+psycopg = "3.2.4"
+psycopg-binary = "3.2.4"
+langchain-google-genai = "*"
+langchain-postgres = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "8.4.1"
