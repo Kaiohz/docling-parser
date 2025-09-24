@@ -7,9 +7,9 @@ os.environ["GOOGLE_API_KEY"] = "key"
 
 
 async def main():
-    response = await ask_vector_store("Je n'arrive pas a me connecter a connect rh")
-    print("Response from vector store:", response)
-    # toc_map now contains the desired structure
+    response = await ask_vector_store("Comment embaucher un auxiliaire de vacances ? Donne moi les detals stp")
+    print("---" * 10)
+    print(response)
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -3,7 +3,7 @@ from langchain_postgres.vectorstores import PGVector
 
 connection_string = "postgresql+psycopg://docling:docling@localhost:5432/docling"
 
-async def ask_vector_store(query: str, k: int = 15) -> str:
+async def ask_vector_store(query: str, k: int = 100) -> str:
     embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
 
     vector_store = PGVector(

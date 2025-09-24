@@ -1,6 +1,9 @@
 from langchain.schema import Document
 from langchain_google_genai import GoogleGenerativeAI
+import pymupdf4llm
+import pymupdf
 import asyncio
+import os
 
 async def get_toc_map(doc) -> dict:
     toc = doc.get_toc()  # type: ignore
@@ -37,36 +40,25 @@ async def transform_document(doc, page_title_map) -> list:
 
     async def process_page(page_number, page):
         title = page_title_map.get(page_number, "No Title")
-        original_text = page.get_text()
+        temp_doc = pymupdf.open()
+        temp_doc.insert_pdf(doc, from_page=page_number, to_page=page_number)
+        temp_doc.save("temp_page.pdf")
+        temp_doc.close()
 
-        prompt = (
-            "Remove any irrelevant context and keep only the main content from the following page.\n"
-            "If the content is only section headers, navigation, or similar irrelevant text, return an empty string.\n"
-            "Examples of irrelevant content:\n"
-            "Recrutement\nRECRUTEMENT\nEMBAUCHE\nEMBAUCHE\nVie du CONTRAT\nVIE DU CONTRAT\n"
-            "Sortie\nSORTIE\nEXTRACTION D’UN RAPPORT\nRetour\nRetour\n\n"
-            "Another example of irrelevant content, no information valuable here:\n"
-            "LE GRAND MANUEL\n"
-            "Porte ouverte avec un remplissage uni\n"
-            "Page content:\n"
-            f"{original_text}\n\n"
-            "Return only the relevant content. DO NOT ALTER THE CONTENT. IF THE CONTENT IS IRRELEVANT, RETURN AN EMPTY STRING."
-        )
-
-        response = await model.ainvoke(prompt)
-        filtered_text = response.content if hasattr(response, "content") else str(response) # type: ignore
+        md_text = pymupdf4llm.to_markdown("temp_page.pdf")
+        os.remove("temp_page.pdf")
 
         prompt_subtitle = (
             "Extract the title of the page if it exists. If no title is found, return an empty string.\n"
-            f"Page content:\n{filtered_text}\n\n"
+            f"Page content:\n{md_text}\n\n"
         )
 
         response_subtitle = await model.ainvoke(prompt_subtitle)
         extracted_title = response_subtitle.content if hasattr(response_subtitle, "content") else str(response_subtitle) # type: ignore
 
-        if filtered_text.strip():
+        if md_text.strip():
             return Document(
-                page_content=filtered_text,
+                page_content=md_text,
                 metadata={"category": title, "sub_category": extracted_title.strip(), "page_number": page_number}
             )
         return None

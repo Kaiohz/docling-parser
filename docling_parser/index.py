@@ -2,7 +2,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_postgres import PGVector
 import pymupdf
 from parser import get_toc_map, transform_document
-from retriever import ask_vector_store
 import asyncio
 import os
 
