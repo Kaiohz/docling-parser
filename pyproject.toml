@@ -34,6 +34,7 @@ pymupdf = "1.26.4"
 pymupdf4llm = "0.0.27"
 psycopg = "3.2.4"
 psycopg-binary = "3.2.4"
+greenlet = "3.2.2"
 langchain-google-genai = "*"
 langchain-postgres = "*"
 
