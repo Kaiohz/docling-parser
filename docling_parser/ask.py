@@ -7,7 +7,7 @@ import asyncio
 import os
 
 source = "docs/sample.pdf" 
-os.environ["GOOGLE_API_KEY"] = "key"
+os.environ["GOOGLE_API_KEY"] = ""
 
 
 async def main():

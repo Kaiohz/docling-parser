@@ -10,6 +10,9 @@ You are an AI assistant tasked with selecting the most relevant collection(s) fo
 
 ## Available Collections:
 
-- **`connect_rh_adp`**
+- **`connect-rh-adp`** : Documents related to ADP (Automatic Data Processing) services, including payroll and HR management solutions.
+- **`connect-rh-paie`** : Documents related to PAIE (Payroll) services and solutions.
+- **`connect-rh-rec`** : Documents related to REC (Recruitment) services and solutions.
+- **`connect-rh-rhpm`** : Documents related to RHPM (Resource Human Project Management) services and solutions.
 
 ---
