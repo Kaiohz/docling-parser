@@ -29,3 +29,18 @@ async def ask_vector_store(query: str, k: int = 100) -> str:
     answer = model_response.content if hasattr(model_response, "content") else str(model_response) # type: ignore
 
     return answer
+
+async def generate_answer(question,results) -> str:
+    results = [result for result in results]
+    prompt = (
+        "provide a concise and accurate answer to the question below.\n"
+        "If the context do not contain relevant information, respond with 'I don't know'.\n\n"
+        "Just provide the answer"
+        "Answer in French.\n\n"
+        f"Question: {question}"
+        f"Context: {results}\n"
+    )
+    model = GoogleGenerativeAI(model="gemini-2.0-flash")  # Adjust model name as needed
+    model_response = await model.ainvoke(prompt)
+    answer = model_response.content if hasattr(model_response, "content") else str(model_response) # type: ignore
+    return answer
