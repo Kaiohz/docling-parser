@@ -1,13 +1,17 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from llm.chat_generic_client import ChatGenericClient
+from langchain_ollama import ChatOllama
 
 
 class ChatClientFactory:
-    def __init__(self, provider: str, temperature: float):
+    def __init__(self, provider: str, temperature: float, model: str):
         self.provider = provider
         self.temperature = temperature
         self.model_mapping = {
-            "Google": ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+            "Google": ChatGoogleGenerativeAI(model=model),
+            "Ollama": ChatOllama(model=model),
+
         }
 
     def create_client(self) -> ChatGenericClient:

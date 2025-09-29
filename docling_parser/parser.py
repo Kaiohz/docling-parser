@@ -1,9 +1,13 @@
 from langchain.schema import Document
-from langchain_google_genai import GoogleGenerativeAI
+from langchain_core.messages import HumanMessage
+import base64
 import pymupdf4llm
 import pymupdf
 import asyncio
 import os
+import uuid 
+
+from docling_parser.llm.chat_client_factory import ChatClientFactory
 
 async def get_toc_map(doc) -> dict:
     toc = doc.get_toc()  # type: ignore
@@ -36,32 +40,51 @@ async def get_toc_map(doc) -> dict:
 
 async def transform_document(doc, page_title_map) -> list:
     documents = []
-    model = GoogleGenerativeAI(model="gemini-2.0-flash")  # Adjust model name as needed
+    semaphore = asyncio.Semaphore(100)
+    model = ChatClientFactory(provider="Google", temperature=0.0, model="gemini-2.0-flash").create_client()
 
     async def process_page(page_number, page):
-        title = page_title_map.get(page_number, "No Title")
-        temp_doc = pymupdf.open()
-        temp_doc.insert_pdf(doc, from_page=page_number, to_page=page_number)
-        temp_doc.save("temp_page.pdf")
-        temp_doc.close()
+        async with semaphore:
+            title = page_title_map.get(page_number, "No Title")
+            temp_doc = pymupdf.open()
+            temp_doc.insert_pdf(doc, from_page=page_number, to_page=page_number)
+            pix = page.get_pixmap()
+            temp_pdf = f"temp_page_{uuid.uuid4()}.pdf"
+            temp_image = f"temp_image_{uuid.uuid4()}.png"
+            pix.save(temp_image)
+            temp_doc.save(temp_pdf)
+            temp_doc.close()
 
-        md_text = pymupdf4llm.to_markdown("temp_page.pdf")
-        os.remove("temp_page.pdf")
+            with open(temp_pdf, "rb") as f:
+                pdf_base64 = base64.b64encode(f.read()).decode()
 
-        prompt_subtitle = (
-            "Extract the title of the page if it exists. If no title is found, return an empty string.\n"
-            f"Page content:\n{md_text}\n\n"
-        )
-
-        response_subtitle = await model.ainvoke(prompt_subtitle)
-        extracted_title = response_subtitle.content if hasattr(response_subtitle, "content") else str(response_subtitle) # type: ignore
-
-        if md_text.strip():
-            return Document(
-                page_content=md_text,
-                metadata={"category": title, "sub_category": extracted_title.strip(), "page_number": page_number}
+            with open(temp_image, "rb") as f:
+                image_base64 = base64.b64encode(f.read()).decode()
+            
+            message = HumanMessage(
+                content=[
+                    {"type": "text", "text": "Describe the following image in detail. Answer in Markdown format."},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{image_base64}"}
+                    }
+                ]
             )
-        return None
+
+            response = await model.ainvoke([message]) # type: ignore
+
+            md_text = pymupdf4llm.to_markdown(temp_pdf)
+            os.remove(temp_pdf)
+            os.remove(temp_image)
+
+            print(f"Converted {title} page {page_number} to markdown")
+
+            if md_text.strip():
+                return Document(
+                    page_content=md_text + "\n\n" + response.content, # type: ignore
+                    metadata={"category": title, "page_number": page_number, "pdf_base64": f"{pdf_base64}"} # type: ignore
+                )
+            return None
 
     tasks = [
         process_page(page_number, page)

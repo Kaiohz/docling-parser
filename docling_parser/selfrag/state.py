@@ -1,6 +1,6 @@
 from typing import List, Optional
 from typing_extensions import TypedDict
-from selfrag.models.alfred_document import AlfredDocument
+from langchain_core.documents import Document
 from selfrag.models.self_rag_input import SelfRagInput
 
 
@@ -16,5 +16,4 @@ class SelfRagState(TypedDict):
 
     step: str
     input_data: SelfRagInput  # Contains the search query
-    documents: Optional[List[AlfredDocument]]
-    collections: Optional[List[str]]
+    documents: Optional[List[Document]]

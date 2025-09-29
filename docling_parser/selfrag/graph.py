@@ -13,18 +13,11 @@ class AgentSelfRag(AlfredAgent):
     def build_graph(self):
         builder = StateGraph(SelfRagState)
 
-        builder.add_node("collection", self.AlfredSelfRagNodes.choose_collection)
         builder.add_node("retrieve", self.AlfredSelfRagNodes.retrieve)
         builder.add_node("grade_documents", self.AlfredSelfRagNodes.grade_documents)
 
-        # Définir un point d'entrée conditionnel
-        builder.set_conditional_entry_point(
-            path=lambda state: "retrieve" if state.get("collections") else "collection",
-            path_map={"retrieve": "retrieve", "collection": "collection"},
-        )
-
         # Ajouter les transitions restantes
-        builder.add_edge("collection", "retrieve")
+        builder.add_edge(START, "retrieve")
         builder.add_edge("retrieve", "grade_documents")
         builder.add_edge("grade_documents", END)
 

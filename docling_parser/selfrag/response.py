@@ -1,7 +1,6 @@
 from dto.agent.agent_response import AgentResponse
 from dto.rag.self_rag_response import SelfRagResponse
 from response_strategy import ResponseStrategy
-from selfrag.models.alfred_document import AlfredDocument
 from shared.extract_step import extract_step_from_chunk
 
 
@@ -30,8 +29,6 @@ class SelfRagResponseStrategy(ResponseStrategy):
                 "grade_documents" in chunk[1]
                 and "documents" in chunk[1]["grade_documents"]
             ):
-                documents: list[AlfredDocument] = chunk[1]["grade_documents"][
-                    "documents"
-                ]
+                documents = chunk[1]["grade_documents"]["documents"]
                 response.response = SelfRagResponse(sources=documents)
         return response

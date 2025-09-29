@@ -1,12 +1,14 @@
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_ollama import OllamaEmbeddings
 from llm.embeddings_generic_client import EmbeddingsGenericClient
 
 
 class EmbeddingsClientFactory:
-    def __init__(self, provider: str):
+    def __init__(self, provider: str, model: str):
         self.provider = provider
         self.model_mapping = {
-            "Google": GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+            "Google": GoogleGenerativeAIEmbeddings(model=model),
+            "Ollama": OllamaEmbeddings(model=model),
         }
 
     def create_client(self) -> EmbeddingsGenericClient:

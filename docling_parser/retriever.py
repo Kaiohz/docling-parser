@@ -1,10 +1,11 @@
-from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
+from llm.chat_client_factory import ChatClientFactory
+from llm.embeddings_client_factory import EmbeddingsClientFactory
 
 connection_string = "postgresql+psycopg://docling:docling@localhost:5432/docling"
 
 async def ask_vector_store(query: str, k: int = 100) -> str:
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+    embeddings = EmbeddingsClientFactory(provider="Ollama", model="nomic-embed-text:v1.5").create_client()
 
     vector_store = PGVector(
         embeddings=embeddings,
@@ -15,10 +16,11 @@ async def ask_vector_store(query: str, k: int = 100) -> str:
     )
     results = await vector_store.as_retriever(search_type="similarity", search_kwargs={"k": k}).ainvoke(query)
 
-    model = GoogleGenerativeAI(model="gemini-2.0-flash")  # Adjust model name as needed
+    model = ChatClientFactory(provider="Ollama", temperature=0.0, model="qwen2.5:3b").create_client()
 
     prompt = (
-        "Based on the following documents, provide a concise and accurate answer to the question below.\n"
+        "Based on the following documents, provide a detailed, accurate, and comprehensive answer to the question below.\n"
+        "Include examples, thorough explanations, and reference the documents when possible.\n"
         "If the documents do not contain relevant information, respond with 'I don't know'.\n\n"
         "Answer in French.\n\n"
         f"Documents: {results}\n"
@@ -28,17 +30,20 @@ async def ask_vector_store(query: str, k: int = 100) -> str:
 
     answer = model_response.content if hasattr(model_response, "content") else str(model_response) # type: ignore
 
-    return answer
+    return answer # type: ignore
 
-async def generate_answer(question,results) -> str:
-    results = [result for result in results]
+async def generate_answer(question,results, model) -> str:
+    results = [result.page_content for result in results]
     prompt = (
-        "provide a concise and accurate answer to the question below.\n"
+        "Based on the following documents, provide an accurate, and comprehensive answer to the question below.\n"
+        "Include examples, thorough explanations, and reference the documents when possible.\n"
+        "Just provide the answer without adding any additional commentary.\n"
+        "If the documents do not contain relevant information, respond that you don't know'.\n\n"
         "Answer in French.\n\n"
         f"Question: {question}\n\n"
         f"Context: {results}\n"
     )
-    model = GoogleGenerativeAI(model="gemini-2.0-flash")  # Adjust model name as needed
+    model = ChatClientFactory(provider="Google", temperature=0.0, model=model).create_client()
     model_response = await model.ainvoke(prompt)
     answer = model_response.content if hasattr(model_response, "content") else str(model_response) # type: ignore
-    return answer
+    return answer # type: ignore
